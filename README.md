@@ -7,16 +7,7 @@ Files are stored in a central location (`~/.config/repo-links/<repo-name>/`) mir
 ## Install
 
 ```bash
-git clone https://github.com/caseycelestin/repo-link.git
-cd repo-link
-bash install.sh
-```
-
-Or manually:
-
-```bash
-curl -o ~/.local/bin/repo-link https://raw.githubusercontent.com/caseycelestin/repo-link/main/repo-link
-chmod +x ~/.local/bin/repo-link
+curl -fsSL https://raw.githubusercontent.com/caseycelestin/repo-link/main/install.sh | bash
 ```
 
 ## Usage

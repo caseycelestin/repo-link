@@ -1,12 +1,15 @@
 #!/bin/bash
-# Install repo-link to ~/.local/bin and add to PATH if needed
+# Install repo-link
+# Usage: curl -fsSL https://raw.githubusercontent.com/caseycelestin/repo-link/main/install.sh | bash
 set -euo pipefail
 
 INSTALL_DIR="${HOME}/.local/bin"
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+REPO_URL="https://raw.githubusercontent.com/caseycelestin/repo-link/main/repo-link"
+
+echo "Installing repo-link..."
 
 mkdir -p "$INSTALL_DIR"
-cp "$SCRIPT_DIR/repo-link" "$INSTALL_DIR/repo-link"
+curl -fsSL "$REPO_URL" -o "$INSTALL_DIR/repo-link"
 chmod +x "$INSTALL_DIR/repo-link"
 
 # Check if ~/.local/bin is in PATH
