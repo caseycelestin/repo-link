@@ -1,0 +1,76 @@
+#!/bin/bash
+# Symlink shared config files into repo clones
+# Usage: repo-link [add <path> | status | init]
+
+set -euo pipefail
+
+base_dir="${REPO_LINK_DIR:-$HOME/.config/repo-links}"
+repo="$(basename "$PWD")"
+repo_dir="$base_dir/$repo"
+
+case "${1:-}" in
+  "")
+    # Link all managed files into the current directory
+    if [[ ! -d "$repo_dir" ]]; then
+      echo "No repo-links config for '$repo'."
+      echo "Available repos:"
+      ls "$base_dir" 2>/dev/null || echo "  (none)"
+      echo ""
+      echo "Run 'repo-link init' to create one."
+      exit 1
+    fi
+    count=0
+    while IFS= read -r -d '' file; do
+      rel="${file#"$repo_dir"/}"
+      mkdir -p "$(dirname "$rel")"
+      ln -sf "$file" "$rel"
+      echo "  linked $rel"
+      ((count++)) || true
+    done < <(find "$repo_dir" -type f -print0)
+    echo "Linked $count file(s) for '$repo'."
+    ;;
+
+  add)
+    rel="${2:?usage: repo-link add <relative-path>}"
+    if [[ ! -f "$rel" ]]; then
+      echo "File not found: $rel"
+      exit 1
+    fi
+    if [[ -L "$rel" ]]; then
+      echo "Already a symlink: $rel"
+      exit 1
+    fi
+    dest="$repo_dir/$rel"
+    mkdir -p "$(dirname "$dest")"
+    cp "$rel" "$dest"
+    ln -sf "$dest" "$rel"
+    echo "Registered and linked: $rel"
+    ;;
+
+  status)
+    if [[ ! -d "$repo_dir" ]]; then
+      echo "No repo-links config for '$repo'."
+      exit 1
+    fi
+    while IFS= read -r -d '' file; do
+      rel="${file#"$repo_dir"/}"
+      if [[ -L "$rel" ]] && [[ "$(readlink -f "$rel")" == "$(readlink -f "$file")" ]]; then
+        echo "  linked   $rel"
+      elif [[ -e "$rel" ]]; then
+        echo "  conflict $rel  (exists but not linked)"
+      else
+        echo "  missing  $rel  (run 'repo-link' to link)"
+      fi
+    done < <(find "$repo_dir" -type f -print0)
+    ;;
+
+  init)
+    mkdir -p "$repo_dir"
+    echo "Created $repo_dir"
+    ;;
+
+  *)
+    echo "Usage: repo-link [add <path> | status | init]"
+    exit 1
+    ;;
+esac
